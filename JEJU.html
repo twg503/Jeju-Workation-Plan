@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>제주 워케이션 스테이 맵</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <style>
+    :root{--ink:#163b3b;--muted:#69807b;--paper:#f7f3e9;--card:#fffdf7;--sea:#bfe7e5;--deep:#0e7470;--sun:#f5a64a;--line:#dfe5dc;--shadow:0 16px 44px rgba(22,59,59,.12)}
+    *{box-sizing:border-box} body{margin:0;background:var(--paper);color:var(--ink);font-family:Pretendard,"Apple SD Gothic Neo",sans-serif;overflow:hidden}
+    .top-tabs{position:fixed;top:14px;left:50%;z-index:1200;display:flex;gap:5px;padding:5px;transform:translateX(-50%);border:1px solid rgba(22,59,59,.14);border-radius:15px;background:rgba(255,253,247,.95);box-shadow:0 8px 25px rgba(22,59,59,.14);backdrop-filter:blur(12px)}.top-tabs button{border:0;border-radius:10px;padding:9px 15px;background:transparent;color:var(--muted);font:800 12px Pretendard,sans-serif;cursor:pointer}.top-tabs button.active{background:var(--ink);color:white}.app-view[hidden]{display:none!important}
+    .shell{height:100vh;display:grid;grid-template-columns:minmax(330px,410px) 1fr}
+    aside{display:flex;min-height:0;flex-direction:column;padding:24px 20px 16px;background:linear-gradient(180deg,#fffdf7 0%,#f7f3e9 100%);border-right:1px solid var(--line);z-index:800;box-shadow:8px 0 30px rgba(22,59,59,.06)}
+    .eyebrow{font-size:11px;letter-spacing:.18em;font-weight:800;color:var(--deep);text-transform:uppercase}.hero h1{font:700 34px/1.14 "Gowun Batang",serif;margin:8px 0 6px}.hero p{font-size:14px;line-height:1.55;color:var(--muted);margin:0 0 17px}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.stat{padding:10px 8px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.75);text-align:center}.stat b{display:block;font-size:19px}.stat span{font-size:11px;color:var(--muted)}
+    .search{position:relative;margin-bottom:10px}.search input{width:100%;border:1px solid var(--line);background:white;border-radius:14px;padding:13px 42px 13px 14px;font:inherit;outline:none}.search input:focus{border-color:var(--deep);box-shadow:0 0 0 3px rgba(14,116,112,.1)}.search button{position:absolute;right:8px;top:7px;border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--muted)}
+    .layer-switch{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px}.layer-switch button{display:flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:white;border-radius:13px;padding:10px 5px;color:var(--muted);font-weight:800;font-size:12px;cursor:pointer}.layer-switch button.active.office-toggle{background:var(--ink);border-color:var(--ink);color:white}.layer-switch button.active.stay-toggle{background:#e98932;border-color:#e98932;color:white}.layer-switch button.active.pick-toggle{background:#7753a6;border-color:#7753a6;color:white}.layer-switch i{width:9px;height:9px;border-radius:50%;background:currentColor}
+    .filters{display:flex;gap:7px;overflow:auto;padding-bottom:11px}.filters button{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 11px;color:var(--muted);font-weight:700;cursor:pointer}.filters button.active{background:var(--ink);border-color:var(--ink);color:white}
+    .count{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted);padding:0 2px 8px}.count button{border:0;background:transparent;color:var(--deep);font-weight:800;cursor:pointer}
+    .list{overflow:auto;display:grid;gap:9px;padding:0 4px 18px 0;scrollbar-width:thin}.place{border:1px solid var(--line);border-radius:15px;padding:13px;background:rgba(255,255,255,.75);cursor:pointer;transition:.2s}.place:hover,.place.active{background:white;border-color:#8fc9c6;transform:translateY(-1px);box-shadow:0 8px 24px rgba(22,59,59,.08)}.place.pick-card{border-color:#d9cce9;background:#fcf9ff}.place-head{display:flex;gap:10px;align-items:center}.num{flex:0 0 30px;height:30px;display:grid;place-items:center;border-radius:10px;background:#dff1ef;color:var(--deep);font-weight:800}.pick-card .num{background:#eee7f7;color:#7753a6}.place h2{font-size:14px;margin:0;line-height:1.35}.region{margin-left:auto;color:var(--muted);font-size:11px;white-space:nowrap}.address{font-size:12px;color:var(--muted);line-height:1.45;margin:8px 0 0 40px}.badges{display:flex;gap:5px;margin:8px 0 0 40px}.badge{font-size:10px;font-weight:800;padding:4px 7px;border-radius:999px;background:#dff1ef;color:var(--deep)}.badge.stay{background:#fff0df;color:#b85f17}.badge.pick{background:#eee7f7;color:#6b4799}.stay-note{font-size:11px;color:#a55b20;line-height:1.4;margin:6px 0 0 40px}.review-link{display:inline-block;margin:9px 0 0 40px;color:#03a55a;font-size:11px;font-weight:800;text-decoration:none}.review-link:hover{text-decoration:underline}
+    main{position:relative;min-width:0}.map{height:100%;width:100%;background:var(--sea)}.map-tools{position:absolute;top:18px;right:18px;z-index:700;display:flex;gap:8px}.map-tools button{border:1px solid rgba(22,59,59,.15);background:rgba(255,253,247,.94);color:var(--ink);border-radius:12px;padding:10px 13px;font-weight:800;box-shadow:0 6px 18px rgba(22,59,59,.12);cursor:pointer}.map-status{position:absolute;left:50%;top:18px;z-index:700;transform:translateX(-50%);border:1px solid rgba(22,59,59,.15);border-radius:12px;padding:9px 12px;background:rgba(255,253,247,.95);box-shadow:0 6px 18px rgba(22,59,59,.12);font-size:12px;font-weight:700;color:var(--muted)}.map-status[hidden]{display:none}.map-status button{margin-left:8px;border:0;border-radius:8px;padding:5px 8px;background:var(--deep);color:white;font:inherit;cursor:pointer}
+    .legend{position:absolute;z-index:700;bottom:24px;right:18px;background:rgba(255,253,247,.94);border:1px solid rgba(22,59,59,.14);border-radius:14px;padding:10px 13px;box-shadow:var(--shadow);font-size:11px;color:var(--muted)}.legend b{color:var(--ink)}
+    .marker{width:32px;height:38px;display:grid;place-items:center;background:var(--ink);color:white;border:3px solid white;border-radius:50% 50% 50% 8px;transform:rotate(-45deg);box-shadow:0 4px 10px rgba(0,0,0,.25);font-weight:800}.marker span{transform:rotate(45deg)}.marker.stay-marker{background:#e98932;border-radius:11px 11px 11px 3px;font-size:17px}.marker.stay-marker span{font-size:16px}.marker.pick-marker{background:#7753a6;border-radius:50% 50% 50% 8px;font-size:16px}.marker.pick-marker span{font-size:15px}
+    .leaflet-popup-content-wrapper{border-radius:17px;box-shadow:var(--shadow)}.leaflet-popup-content{margin:16px;width:255px!important}.pop .tag{font-size:10px;color:var(--deep);font-weight:800;letter-spacing:.1em}.pop h3{margin:4px 0 7px;font-size:17px}.pop p{font-size:12px;color:var(--muted);line-height:1.5;margin:0 0 12px}.links{display:flex;gap:7px}.links a{text-decoration:none;flex:1;text-align:center;border-radius:9px;padding:8px 6px;background:#eef5f2;color:var(--ink);font-size:11px;font-weight:800}.links a.primary{background:var(--deep);color:white}
+    .leaflet-control-attribution{font-size:9px}.mobile-head{display:none}
+    .layer-switch{grid-template-columns:repeat(4,1fr);gap:5px}.layer-switch button{font-size:11px;padding:9px 2px}.layer-switch button.active.play-toggle{background:#1687b8;border-color:#1687b8;color:white}.place.play-card{border-color:#b9dfef;background:#f7fcff}.play-card .num{background:#dff3fb;color:#0879aa}.badge.play{background:#dff3fb;color:#0879aa}.activity-note{font-size:11px;color:var(--muted);line-height:1.5;margin:6px 0 0 40px}.marker.play-marker{background:#1687b8}.marker.play-marker span{font-size:15px}
+    .plan-view,.food-view{height:100vh;overflow:auto;padding:86px 24px 54px;background:linear-gradient(145deg,#eef7f4 0%,#f7f3e9 46%,#fff5e7 100%)}.plan-wrap,.food-wrap{width:min(1160px,100%);margin:auto}.plan-intro{display:grid;grid-template-columns:1.5fr 1fr;gap:22px;align-items:end;margin-bottom:24px}.plan-intro h1,.food-head h1{font:700 clamp(34px,5vw,58px)/1.08 "Gowun Batang",serif;margin:8px 0 12px}.plan-intro p,.food-head p{max-width:720px;margin:0;color:var(--muted);line-height:1.7}.food-head{margin-bottom:22px}.food-filters{display:flex;gap:8px;overflow:auto;margin:20px 0}.food-filters button{white-space:nowrap;border:1px solid var(--line);border-radius:999px;padding:9px 14px;background:white;color:var(--muted);font-weight:800;cursor:pointer}.food-filters button.active{border-color:#bd6e2d;background:#bd6e2d;color:white}.food-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.food-card{display:flex;flex-direction:column;min-height:250px;border:1px solid #ead9c7;border-radius:20px;padding:19px;background:rgba(255,255,255,.88);box-shadow:0 10px 30px rgba(80,45,20,.06)}.food-card .food-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}.food-card h2{margin:10px 0 5px;font-size:20px}.food-card .food-kind{display:inline-block;border-radius:999px;padding:5px 8px;background:#fff0df;color:#a75318;font-size:10px;font-weight:800}.food-card .food-region{color:var(--muted);font-size:11px;font-weight:700}.food-card .food-review{margin:0 0 9px;color:#03a55a;font-size:12px;font-weight:800}.food-card .food-menu{margin:0 0 9px;font-size:13px;font-weight:800}.food-card .food-note,.food-card address{margin:0 0 8px;color:var(--muted);font-size:12px;line-height:1.55;font-style:normal}.food-card .food-links{display:flex;gap:7px;margin-top:auto;padding-top:10px}.food-card .food-links a{flex:1;border-radius:10px;padding:9px 7px;background:#f3eee7;color:var(--ink);text-align:center;text-decoration:none;font-size:11px;font-weight:800}.food-card .food-links a.primary{background:#bd6e2d;color:white}.food-caution{margin-top:16px;padding:14px 17px;border-radius:15px;background:#fff8ee;color:#8a633e;font-size:11px;line-height:1.6}.routine{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:13px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.72)}.routine div{padding:9px;text-align:center}.routine b{display:block;font-size:15px}.routine span{font-size:11px;color:var(--muted)}.proposal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}.proposal{position:relative;border:1px solid var(--line);border-radius:20px;padding:20px;background:rgba(255,255,255,.82);box-shadow:0 10px 30px rgba(22,59,59,.06)}.proposal.recommended{border:2px solid var(--deep);background:#fff}.proposal .tag{display:inline-block;padding:5px 8px;border-radius:999px;background:#e8efeb;color:var(--deep);font-size:10px;font-weight:800}.proposal.recommended .tag{background:var(--deep);color:white}.proposal h2{margin:12px 0 5px;font-size:20px}.proposal .route{color:var(--muted);font-size:13px;line-height:1.55;min-height:42px}.proposal ul{margin:14px 0 0;padding-left:18px;color:var(--muted);font-size:12px;line-height:1.65}.proposal .score{margin-top:16px;padding-top:13px;border-top:1px solid var(--line);font-size:12px;font-weight:800}.week-card{border:1px solid var(--line);border-radius:22px;background:rgba(255,255,255,.9);overflow:hidden;box-shadow:var(--shadow)}.week-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:20px 22px;border-bottom:1px solid var(--line)}.week-head h2{margin:0;font-size:20px}.week-head p{margin:4px 0 0;color:var(--muted);font-size:12px}.week-head button{border:0;border-radius:10px;padding:9px 11px;background:#edf4f1;color:var(--deep);font-weight:800;cursor:pointer}.day-row{display:grid;grid-template-columns:64px 1.15fr .9fr 1.25fr;gap:14px;align-items:center;padding:16px 22px;border-bottom:1px solid #edf0ea}.day-row:last-child{border:0}.day{font-weight:800}.day small{display:block;color:var(--muted);font-weight:500}.slot b{display:block;font-size:13px}.slot span{display:block;margin-top:4px;color:var(--muted);font-size:11px;line-height:1.4}.content-check{display:flex;align-items:flex-start;gap:9px}.content-check input{width:18px;height:18px;margin-top:1px;accent-color:var(--deep)}.content-check label{font-size:13px;font-weight:700;cursor:pointer}.content-check label span{display:block;margin-top:3px;color:var(--muted);font-size:11px;font-weight:400}.plan-note{margin-top:14px;padding:16px 18px;border-radius:16px;background:#183e3c;color:#e9f5f1;font-size:12px;line-height:1.65}.plan-note b{color:white}.source-links{margin-top:10px;color:var(--muted);font-size:11px}.source-links a{color:var(--deep)}
+    @media(max-width:900px){.plan-intro{grid-template-columns:1fr}.proposal-grid,.food-grid{grid-template-columns:1fr 1fr}.proposal .route{min-height:0}.day-row{grid-template-columns:54px 1fr 1fr}.content-check{grid-column:2/4}}
+    @media(max-width:760px){body{overflow:auto}.top-tabs{top:8px}.top-tabs button{padding:8px 10px}.shell{height:auto;min-height:100vh;display:flex;flex-direction:column}.mobile-head{display:block}.hero{display:none}aside{order:2;height:auto;min-height:46vh;border:0;padding:17px 14px}.stats{display:none}main{order:1;height:54vh;min-height:400px}.map-tools{top:12px;right:12px}.legend{bottom:14px;right:12px}.list{max-height:none}.search{margin-top:0}.plan-view,.food-view{height:auto;min-height:100vh;padding:72px 14px 38px}.food-grid{grid-template-columns:1fr}.routine{grid-template-columns:1fr}.day-row{grid-template-columns:46px 1fr;padding:15px}.day-row .slot{grid-column:2}.content-check{grid-column:2}.week-head{padding:17px 15px}}
+  </style>
+</head>
+<body>
+<nav class="top-tabs" aria-label="화면 전환"><button class="active" data-view="mapView">장소 찾기</button><button data-view="foodView">식당</button><button data-view="planView">주간 계획</button></nav>
+<div class="shell app-view" id="mapView">
+  <aside>
+    <div class="hero"><div class="eyebrow">Late Sep – Early Oct · Work & Play</div><h1>제주에서 일하고,<br>퇴근하면 파도와 밤으로.</h1><p>오피스·숙소와 함께 초가을 서핑 강습, 퇴근 후 즐길 야간 콘텐츠를 비교하세요.</p></div>
+    <div class="stats"><div class="stat"><b>17</b><span>오피스</span></div><div class="stat"><b>36</b><span>콘텐츠</span></div><div class="stat"><b>3</b><span>서핑 후보</span></div></div>
+    <div class="search"><input id="search" aria-label="장소 검색" placeholder="이름·주소로 검색"><button id="clear" title="검색 지우기">×</button></div>
+    <div class="layer-switch" id="layers"><button class="active office-toggle" data-layer="office"><i></i>오피스</button><button class="active stay-toggle" data-layer="stay"><i></i>숙소</button><button class="active play-toggle" data-layer="play"><i></i>콘텐츠</button><button class="active pick-toggle" data-layer="pick"><i></i>Pick</button></div>
+    <div class="filters" id="filters"><button class="active" data-region="전체">전체</button><button data-region="제주시">제주시</button><button data-region="동부">동부</button><button data-region="서부">서부</button><button data-region="서귀포">서귀포</button></div>
+    <div class="count"><span id="count">17곳 표시 중</span><button id="showAll">전체 지도 보기</button></div>
+    <div class="list" id="list"></div>
+  </aside>
+  <main>
+    <div id="map" class="map"></div>
+    <div class="map-tools"><button id="fit">⌖ 전체 보기</button></div>
+    <div id="mapStatus" class="map-status" role="status">배경 지도를 불러오는 중…</div>
+    <div class="legend"><b>● 오피스</b> 청록 &nbsp; <b style="color:#c86d20">■ 숙소</b> 주황 &nbsp; <b style="color:#1687b8">≈ 콘텐츠</b> 파랑 &nbsp; <b style="color:#7753a6">♥ Pick</b> 보라</div>
+  </main>
+</div>
+<section class="food-view app-view" id="foodView" hidden>
+  <div class="food-wrap">
+    <div class="food-head"><div class="eyebrow">Bread · Sandwich · Local Meal</div><h1>내일 점심을 미리,<br>맛있는 곳에서.</h1><p>워케이션 동선인 애월–협재–한림–한경을 중심으로 네이버 방문자 리뷰가 많거나, 두모가 가까이에서 실제로 활용하기 좋은 곳을 골랐습니다.</p></div>
+    <div class="food-filters" id="foodFilters"><button class="active" data-food="전체">전체</button><button data-food="빵">빵·베이커리</button><button data-food="샌드위치">샌드위치</button><button data-food="식사">식당</button></div>
+    <div class="food-grid" id="foodGrid"></div>
+    <div class="food-caution">리뷰 수는 네이버 플레이스가 외부 자동 조회를 제한해 검색 결과에 노출된 최근 확인치입니다. 현재 수치·영업시간·휴무·재고는 카드의 네이버지도에서 방문 직전에 다시 확인하세요. 특히 작은 베이커리는 조기 품절될 수 있습니다.</div>
+  </div>
+</section>
+<section class="plan-view app-view" id="planView" hidden>
+  <div class="plan-wrap">
+    <div class="plan-intro"><div><div class="eyebrow">09:00–15:00 · five day rhythm</div><h1>일은 단단하게,<br>제주는 하루에 하나씩.</h1><p>점심은 전날 저녁에 미리 사고, 오전 9시부터 오후 3시까지 집중 근무합니다. 퇴근 후에는 욕심내지 않고 가까운 콘텐츠 하나만 즐기는 계획입니다.</p></div><div class="routine"><div><b>전날 저녁</b><span>다음 날 점심 구매</span></div><div><b>09:00–15:00</b><span>지정 오피스 근무</span></div><div><b>15:00 이후</b><span>콘텐츠 딱 하나</span></div></div></div>
+    <div class="proposal-grid">
+      <article class="proposal"><span class="tag">안건 1 · 서부 집중</span><h2>마레보 + 두모가</h2><div class="route">월·화·수 마레보비치호텔<br>목·금 두모가</div><ul><li>곽지에서 한경으로 한 번만 이동</li><li>퇴근 후 바다 콘텐츠 연결이 가장 쉬움</li><li>두모가는 숙소이므로 공식 근무 인정 오피스는 별도 예약 필요</li></ul><div class="score">추천도 4.5 / 5 · 가장 현실적인 원안</div></article>
+      <article class="proposal"><span class="tag">안건 2 · 동서 횡단</span><h2>애월 + 질그랭이</h2><div class="route">월·화·수 애월권<br>목·금 세화 질그랭이</div><ul><li>서부와 동부의 분위기를 모두 경험</li><li>수요일 저녁 장거리 이동이 필요</li><li>짐 이동과 점심 구매 루틴이 한 번 끊김</li></ul><div class="score">추천도 3.5 / 5 · 다양성 우선</div></article>
+      <article class="proposal recommended"><span class="tag">추천안 · 이동 피로 최소화</span><h2>서쪽으로 천천히</h2><div class="route">월·화 마레보 → 수 솔트<br>목·금 두모가</div><ul><li>애월–곽지–한경의 짧은 축만 사용</li><li>같은 서부에서도 해변 분위기가 달라짐</li><li>수요일을 완충일로 써 일정이 덜 단조로움</li></ul><div class="score">추천도 5 / 5 · 일과 여행의 균형</div></article>
+    </div>
+    <section class="week-card"><div class="week-head"><div><h2>추천안 주간 실행표</h2><p>체크박스 상태는 이 브라우저에 저장됩니다.</p></div><button id="resetPlan" type="button">체크 초기화</button></div>
+      <div class="day-row"><div class="day">월 <small>DAY 1</small></div><div class="slot"><b>마레보비치호텔</b><span>09:00–15:00 집중 근무</span></div><div class="slot"><b>점심</b><span>일요일 저녁 구매</span></div><div class="content-check"><input id="day1" type="checkbox"><label for="day1">곽지과물해변 산책<span>첫날은 무리 없이 바다 적응</span></label></div></div>
+      <div class="day-row"><div class="day">화 <small>DAY 2</small></div><div class="slot"><b>마레보비치호텔</b><span>09:00–15:00 집중 근무</span></div><div class="slot"><b>점심</b><span>월요일 저녁 구매</span></div><div class="content-check"><input id="day2" type="checkbox"><label for="day2">한담해안산책로 1.2km<span>곽지에서 이어지는 노을 산책</span></label></div></div>
+      <div class="day-row"><div class="day">수 <small>DAY 3</small></div><div class="slot"><b>솔트</b><span>09:00–15:00 집중 근무</span></div><div class="slot"><b>점심</b><span>화요일 저녁 구매</span></div><div class="content-check"><input id="day3" type="checkbox"><label for="day3">9.81파크 또는 실내 스포츠<span>운영 회차 확인 후 1개만 예약</span></label></div></div>
+      <div class="day-row"><div class="day">목 <small>DAY 4</small></div><div class="slot"><b>한경권 지정 오피스</b><span>09:00–15:00 · 예약 확정 필요</span></div><div class="slot"><b>점심</b><span>수요일 저녁 구매</span></div><div class="content-check"><input id="day4" type="checkbox"><label for="day4">신창풍차해안도로<span>바람이 세면 걷기로 전환</span></label></div></div>
+      <div class="day-row"><div class="day">금 <small>DAY 5</small></div><div class="slot"><b>한경권 지정 오피스</b><span>09:00–15:00 · 예약 확정 필요</span></div><div class="slot"><b>점심</b><span>목요일 저녁 구매</span></div><div class="content-check"><input id="day5" type="checkbox"><label for="day5">제주현대미술관 + 저지 산책<span>15시 퇴근 직후 이동, 휴관일 확인</span></label></div></div>
+    </section>
+    <div class="plan-note"><b>예약 전 핵심 확인:</b> 두모가는 숙소로 등록된 장소이므로 그곳에서 일한 시간이 지원사업 업무일로 인정되는지는 별개입니다. 목·금은 지정 오피스 예약을 먼저 확정하고, 숙소와의 실제 이동 시간을 기준으로 계획을 다듬으세요.</div>
+    <div class="source-links">콘텐츠 참고: <a href="https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000020159" target="_blank" rel="noopener">한담해안산책로</a> · <a href="https://www.visitjeju.net/u/9cD" target="_blank" rel="noopener">신창풍차해안도로</a></div>
+  </div>
+</section>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script>
+const foodPlaces = [
+ {n:'노을리',kind:'빵',r:'애월',a:'제주시 애월읍 애월해안로 656',review:'방문자 리뷰 4,676+',checked:'검색 노출 확인치',menu:'베이커리 · 커피 · 포장',note:'리뷰 규모가 큰 애월 해안 베이커리 카페. 다음 날 아침이나 점심용 빵을 한꺼번에 사기 좋습니다.'},
+ {n:'협재갈치조림구이 운치 본점',kind:'식사',r:'협재',a:'제주시 한림읍 한림로 358',review:'방문자 리뷰 2,619+',checked:'2025년 자료 확인치',menu:'갈치구이 · 갈치조림',note:'협재에서 든든하게 먹는 제주식 식사 후보. 포장 가능 여부는 매장에 확인하세요.'},
+ {n:'안녕협재씨 제주협재점',kind:'식사',r:'협재',a:'제주시 한림읍 금능길 12',review:'방문자 리뷰 2,340+',checked:'2024년 자료 확인치',menu:'딱새우장 · 돌문어장 비빔밥',note:'오전부터 이른 오후까지 활용하기 좋은 한 그릇 식사. 영업 종료가 이른 편이라 당일 시간을 확인하세요.'},
+ {n:'애월당 애월제과',kind:'빵',r:'애월',a:'제주시 애월읍 애월해안로 454-3',review:'방문자 리뷰 1,661+',checked:'검색 노출 확인치',menu:'돌크림빵 · 제주 기념 디저트',note:'애월 동선에서 포장하기 쉬운 제과점. 간단한 간식이나 다음 날 디저트용으로 적합합니다.'},
+ {n:'해지개',kind:'빵',r:'애월',a:'제주시 애월읍 애월북서길 52',review:'방문자 리뷰 1,404+',checked:'검색 노출 확인치',menu:'베이커리 · 디저트 · 커피',note:'애월 해안의 대형 베이커리 카페. 좌석과 주차가 필요한 날의 무난한 선택입니다.'},
+ {n:'금능샌드',kind:'샌드위치',r:'금능',a:'제주시 한림읍 금능길 89 1층',review:'리뷰 다수 · 네이버에서 최신 확인',checked:'메뉴·주소 교차 확인',menu:'파니니 · 샌드위치',note:'금능해변 가까이에서 한 끼로 먹기 좋은 샌드위치 전문 후보. 허니애플고르곤졸라 파니니 후기가 많습니다.'},
+ {n:'웨이뷰 협재바다',kind:'빵',r:'한림',a:'제주시 한림읍 옹포7길 25-3',review:'리뷰 다수 · 네이버에서 최신 확인',checked:'주소·업종 교차 확인',menu:'베이커리 · 커피',note:'비양도 방향 바다를 보는 대형 베이커리 카페. 협재–한림 이동 중 빵 포장에 편리합니다.'},
+ {n:'꼬떼웨스트',kind:'빵',r:'한경',a:'제주시 한경면 대한로 800-2',review:'근거리 추천 · 네이버에서 최신 확인',checked:'2026년 운영 자료 확인',menu:'소규모 베이커리 · 커피',note:'두모가와 가까운 조용한 베이커리. 목–일 짧게 운영하는 경우가 있어 영업일과 품절 여부를 꼭 확인하세요.'},
+ {n:'대문집',kind:'식사',r:'한림',a:'제주시 한림읍 한림로 484',review:'방문자 리뷰 17,000+',checked:'검색 노출 확인치',menu:'갈치조림 · 성게미역국 · 물회',note:'한림권에서 리뷰 규모가 매우 큰 제주식 식당. 메뉴가 다양해 일행 취향이 갈릴 때 유용합니다.'}
+];
+const foodNaverUrl=p=>'https://map.naver.com/p/search/'+encodeURIComponent(p.n+' '+p.a);
+const foodEsc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function renderFood(kind='전체'){
+ const grid=document.getElementById('foodGrid');grid.innerHTML='';
+ foodPlaces.filter(p=>kind==='전체'||p.kind===kind).forEach(p=>{
+  const card=document.createElement('article');card.className='food-card';
+  card.innerHTML=`<div class="food-top"><span class="food-kind">${foodEsc(p.kind==='빵'?'빵·베이커리':p.kind)}</span><span class="food-region">${foodEsc(p.r)}</span></div><h2>${foodEsc(p.n)}</h2><p class="food-review">${foodEsc(p.review)}</p><p class="food-menu">${foodEsc(p.menu)}</p><p class="food-note">${foodEsc(p.note)}</p><address>${foodEsc(p.a)}<br><small>${foodEsc(p.checked)}</small></address><div class="food-links"><a target="_blank" rel="noopener" href="https://search.naver.com/search.naver?where=blog&query=${encodeURIComponent(p.n+' 제주 후기')}">후기 보기</a><a class="primary" target="_blank" rel="noopener" href="${foodNaverUrl(p)}">네이버지도</a></div>`;
+  grid.appendChild(card);
+ });
+}
+document.getElementById('foodFilters').onclick=e=>{const b=e.target.closest('button[data-food]');if(!b)return;document.querySelectorAll('.food-filters button').forEach(x=>x.classList.toggle('active',x===b));renderFood(b.dataset.food)};
+renderFood();
+const places = [
+ {n:'메리히어 제주',a:'제주시 조천읍 조천2길 25',r:'동부',lat:33.5398,lng:126.6372},
+ {n:'오피스 제주',a:'서귀포시 안덕면 향교로 214',r:'서귀포',lat:33.2399,lng:126.3038},
+ {n:'올레스테이',a:'서귀포시 중정로 22 · 제주올레여행자센터 3층',r:'서귀포',lat:33.2473863,lng:126.5586387},
+ {n:'세화 질그랭이 거점센터',a:'제주시 구좌읍 세평항로 46-9',r:'동부',lat:33.5253,lng:126.8581},
+ {n:'디어먼데이 제주 풀빌라 소랑점',a:'제주시 조천읍 곱은달남길 216',r:'동부',lat:33.4795,lng:126.6748},
+ {n:'디어먼데이 제주 소노캄 제주점',a:'서귀포시 표선면 일주동로 6347-17',r:'서귀포',lat:33.306941,lng:126.793865},
+ {n:'디어먼데이 제주 마레보비치호텔점',a:'제주시 애월읍 곽지1길 23 · 지하 1층',r:'서부',lat:33.4508,lng:126.3083},
+ {n:'리플로우 제주',a:'제주시 탑동로2길 3 · 3층',r:'제주시',lat:33.5161,lng:126.5237},
+ {n:'어라운드 폴리',a:'서귀포시 성산읍 서성일로 433',r:'동부',lat:33.4394715,lng:126.8766477},
+ {n:'벵가스테이',a:'서귀포시 성산읍 일주동로4120번길 23-20',r:'동부',lat:33.4185,lng:126.9047},
+ {n:'비레이지',a:'서귀포시 남원읍 위미해안로129번길 17',r:'서귀포',lat:33.2706,lng:126.6607},
+ {n:'위아포트',a:'제주시 중앙로 248 · 아산빌딩 4층',r:'제주시',lat:33.4909,lng:126.5352},
+ {n:'솔트',a:'제주시 애월읍 애월해안로 226',r:'서부',lat:33.4675137,lng:126.3375495},
+ {n:'올래이호워크랩',a:'제주시 테우해안로 166 · 2층',r:'제주시',lat:33.5184,lng:126.4565},
+ {n:'맹그로브 제주시티',a:'제주시 탑동로 5 · 제주서울관광호텔 1층',r:'제주시',lat:33.5160,lng:126.5220},
+ {n:'공간 7',a:'제주시 구좌읍 번영로 2133-50',r:'동부',lat:33.4223933,lng:126.743742},
+ {n:'고요산책',a:'제주시 중앙로12길 5 · 1층',r:'제주시',lat:33.5131,lng:126.5239}
+];
+const stayInfo=[
+ '메리히어 스테이 · 더블 1실·트윈 2실','오피스 제주 호텔형 객실 20실','올레스테이 객실','세화밖거리 · 센터 4층',
+ '풀빌라 소랑','소노캄 제주','마레보비치호텔','리플로우 호텔형 객실',
+ '어라운드폴리 · 롯지·카라반·캐빈·캠핑','벵가스테이 객실','비레이지 스테이','솔트 스테이',
+ null,null,'맹그로브 제주시티 코리빙 객실','공간7 독채형 레지던스','고요산책 · 2인실 3개·4인실 4개'
+];
+places.forEach((p,i)=>p.stay=stayInfo[i]);
+const picks=[
+ {n:'제주 돗통',a:'서귀포시 안덕면 사계북로41번길 189 · 사계리 1036',r:'서귀포',lat:33.2494638,lng:126.2977992,note:'흑돼지 전문점'},
+ {n:'두모가',a:'제주시 한경면 두모3길 24-4 · 두모리 2776-1',r:'서부',lat:33.3526853,lng:126.1829737,note:'독채 숙소 · A동/두모가 J B동'},
+ {n:'이재모피자 제주점',a:'제주시 간월동로 6 · 아라이동 1370-4',r:'제주시',lat:33.4850038,lng:126.5435104,note:'치즈가 풍성한 부산식 피자 · 웨이팅 고려'}
+];
+const activities=[
+  {n:'제이바이시클',a:'제주시 용해로 46 1층',r:'제주시',lat:33.5133,lng:126.5031,kind:'자전거 대여',time:'07:00~20:00 · 사전예약 권장',note:'로드·MTB·전기자전거 대여. 제주 전 지역 무료 배달·반납 및 숙소 픽업 안내가 있어 두모가 수령 가능 여부를 예약 시 확인.',url:'https://xn--9g3b27j05dba15fk08a.urr.kr/'},
+  {n:'망고스쿠터',a:'제주시 서광로 164 · 오라일동',r:'제주시',lat:33.4997,lng:126.5138,kind:'스쿠터 대여',time:'예약 후 인수 · 운영시간 재확인',note:'제주시외버스터미널 인근 스쿠터 대여점. 운전면허 종류·연령·보험·두모가까지 운행 가능한 차종을 결제 전에 확인.',url:'https://www.jejuscooter.co.kr/'},
+  {n:'3인칭관찰자시점',a:'제주시 한경면 신창7길 24',r:'서부',lat:33.3458,lng:126.1807,kind:'카페·작업',time:'최근 안내 11:00~18:00 · 변동 확인',note:'신창포구 앞 조용한 오션뷰 카페. 독서·노트북 작업과 라이딩 휴식에 좋고 매장 앞 대신 신창포구 공영주차장 이용 권장.',url:'https://www.siksinhot.com/P/1167339'},
+  {n:'신창풍차해안도로',a:'제주시 한경면 신창리 1322-1 · 싱계물공원 일대',r:'서부',lat:33.3449,lng:126.1748,kind:'해안 라이딩',time:'상시 · 일몰 전후 약 60~90분',note:'두모가에서 자전거로 연결하기 좋은 풍차·노을 해안 코스. 독립 자전거도로가 아닌 구간과 강한 측풍에 주의.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000010601'},
+  {n:'제주현대미술관',a:'제주시 한경면 저지14길 35',r:'서부',lat:33.3399,lng:126.2658,kind:'미술관',time:'09:00~18:00 · 월요일 휴관',note:'저지문화예술인마을의 실내 관람 콘텐츠. 비 오는 날이나 휴일에 김창열미술관·저지오름과 묶기 좋으며 전시·입장 마감은 방문 전 확인.',url:'https://www.jeju.go.kr/jejumuseum/'},
+  {n:'과물노천탕',a:'제주시 애월읍 곽지9길 20 · 곽지해수욕장',r:'서부',lat:33.4507,lng:126.3058,kind:'해안 용천수탕',time:'무료 · 여름철 중심 운영',note:'곽지해변의 차가운 용천수를 이용한 남녀 구분 노천탕. 여행 시기인 9월 말에는 정식 운영·샤워시설 종료 가능성이 있어 입수 가능 여부를 확인.',url:'https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000014331'},
+  {n:'싱계물 용천수탕',a:'제주시 한경면 신창리 1322-1 · 싱계물공원',r:'서부',lat:33.3449,lng:126.1748,kind:'해안 용천수탕',time:'상시 관람 · 입수는 현장 확인',note:'두모가에서 가장 가까운 해안 용천수 목욕터. 자전거로 신창풍차해안도로와 묶기 좋고 물이 매우 차가우므로 발 담그기부터 권장.',url:'https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000011877',naverQuery:'싱계물공원 제주'},
+  {n:'논짓물 담수욕장',a:'서귀포시 예래해안로 253 · 하예동',r:'서귀포',lat:33.2392,lng:126.3899,kind:'용천수 담수욕장',time:'무료 · 여름철 중심 운영',note:'차가운 용천수와 바닷물이 만나는 천연 담수욕장. 물놀이 시설은 계절 운영이므로 9월 말에는 개방·안전관리 여부를 확인.',url:'https://visitjeju.net/kr/detail/view?contentsid=CONT_000000000500109'},
+  {n:'도두 오래물',a:'제주시 도두항길 4-17 · 도두항 동쪽',r:'제주시',lat:33.5064,lng:126.4662,kind:'해안 용천수탕',time:'무료 · 여름철 수영장 운영',note:'공항과 가까운 남녀 구분 용천수 목욕터. 여름에는 오래물 수영장과 축제가 열리지만 9월 말에는 입수·부대시설 운영 여부를 확인.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000007280'},
+  {n:'김녕 청굴물',a:'제주시 구좌읍 김녕로21길 51-3 일대',r:'동부',lat:33.5572,lng:126.7482,kind:'해안 용천수탕',time:'상시 관람 · 발 담그기',note:'김녕 마을 해안의 남녀 구분 전통 용천수탕. 규모가 작아 수영보다 발 담그기와 마을 산책에 알맞고 세기알해변과 묶기 좋음.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000007225',naverAddressOnly:true},
+  {n:'코코넛서프 제주 중문',a:'서귀포시 중문관광로 205 1층 1호',r:'서귀포',lat:33.2449,lng:126.4125,kind:'서핑',time:'간조 전후 예약제 · 약 2시간',note:'9~10월에도 파도가 좋은 중문. 강습 시간이 매일 달라 주말·반일 일정에 추천.',url:'https://www.coconutsurf.co.kr/'},
+ {n:'서퍼스 립컬 제주점',a:'서귀포시 중문색달해변 일대',r:'서귀포',lat:33.2453,lng:126.4118,kind:'서핑',time:'간조 기준으로 매일 변동',note:'중문 기반 전문 스쿨. 날짜별 강습 가능 시간과 초보반을 예약 전에 확인.',url:'https://surfersjeju.com/how_to_use_guide'},
+ {n:'서프홀릭 제주월정',a:'제주시 구좌읍 월정리 해변 일대',r:'동부',lat:33.5567,lng:126.7957,kind:'서핑',time:'이론 15분 + 실기 1시간 45분',note:'동부 숙소라면 좋은 후보. 9월 말·10월 초 운영과 당일 포인트를 재확인.',url:'https://www.surfholic.co.kr/branch/woljeong_price.php'},
+ {n:'수목원길 야시장',a:'제주시 은수길 69',r:'제주시',lat:33.4695,lng:126.4882,kind:'퇴근 후',time:'9~10월 18:00~22:00',note:'저녁·소품·산책을 한 번에. 2026년 재개장 안내가 확인된 제주시 야간 코스.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000007330'},
+ {n:'용연구름다리 야경',a:'제주시 흥운길 73',r:'제주시',lat:33.5156,lng:126.5144,kind:'퇴근 후',time:'상시 개방 · 30~60분',note:'공항·탑동권에서 부담 없이 걷는 조명 산책. 바람 부는 날은 겉옷 권장.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000012854'},
+ {n:'동문재래시장 밤 먹거리',a:'제주시 관덕로14길 20',r:'제주시',lat:33.5117,lng:126.5261,kind:'퇴근 후',time:'하절기 시장 ~21:00 · 점포별 상이',note:'저녁·간식·기념품 쇼핑. 늦게 갈수록 품절과 주차 혼잡을 고려.',url:'https://visitjeju.net/kr/detail/view?contentsid=CONT_000000000500744'},
+ {n:'한담해안산책로 노을',a:'제주시 애월읍 곽지리 1359',r:'서부',lat:33.4594,lng:126.3104,kind:'퇴근 후',time:'일몰 전후 · 약 60분',note:'9월 말~10월 초에는 해가 빠르므로 가까운 서부 오피스에서만 정시 퇴근 코스로 추천.',url:'https://www.visitjeju.net/'},
+ {n:'천지연폭포 야간 관람',a:'서귀포시 남성중로 2-15',r:'서귀포',lat:33.2448,lng:126.5595,kind:'퇴근 후',time:'09:00~21:20 안내',note:'2026년 5월 야간 관람 재개. 완만한 산책로를 걷는 약 1시간 코스.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000014376'},
+ {n:'금토금토 새연쇼',a:'서귀포시 남성중로 43 · 새연교',r:'서귀포',lat:33.2399,lng:126.5584,kind:'퇴근 후',time:'2026.4.25~10.31 · 금·토 19:00',note:'라이브·불꽃·음악분수. 기상 취소 가능성이 있어 당일 공지를 확인.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000014207'},
+ {n:'서귀포매일올레시장',a:'서귀포시 중앙로62번길 18',r:'서귀포',lat:33.2498,lng:126.5638,kind:'퇴근 후',time:'야간 영업은 점포별 상이',note:'서귀포 시내의 저녁·장보기 코스. 천지연이나 새연교와 묶기 좋음.',url:'https://www.visitjeju.net/'}
+ ,{n:'우도 한 바퀴',a:'제주시 우도면 연평리 · 성산항/종달항 출발',r:'동부',lat:33.5043,lng:126.9530,kind:'휴일 반나절',time:'왕복 배편 포함 최소 4~6시간',note:'배로 약 15분. 자전거·해안 풍경을 즐기는 휴일 코스이며 마지막 배와 기상 운항 여부를 당일 확인.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CONT_000000000500477'},
+ {n:'성산일출봉',a:'서귀포시 성산읍 일출로 284-12',r:'동부',lat:33.4621,lng:126.9364,kind:'출근 전·휴일',time:'9~10월 05:00~19:00 · 매표 ~18:00',note:'정상 왕복은 약 1시간을 잡고 방문. 매달 첫 월요일 휴무이며 음식물 반입은 불가.',url:'https://visitjeju.net/kr/detail/view?contentsid=CONT_000000000500349'},
+ {n:'섭지코지 해안 산책',a:'서귀포시 성산읍 섭지코지로 107',r:'동부',lat:33.4239,lng:126.9306,kind:'퇴근 후·휴일',time:'일몰 전후 · 약 60~90분',note:'성산권 근무일의 바다 산책 후보. 해 진 뒤보다 밝을 때 걷도록 퇴근 직후 이동.',url:'https://www.visitjeju.net/'},
+ {n:'한라산 성판악–백록담',a:'제주시 조천읍 516로 1865',r:'동부',lat:33.3849,lng:126.6204,kind:'휴일 종일',time:'왕복 19.2km · 약 9시간',note:'9~10월은 05:30부터 입산. 백록담 구간은 사전예약이 필요하고 당일 통제 여부·QR을 확인.',url:'https://visithalla.jeju.go.kr/contents/contents.do?id=61'},
+ {n:'한라산 영실–윗세오름',a:'서귀포시 영실로 246',r:'서귀포',lat:33.3489,lng:126.4965,kind:'휴일 반나절',time:'왕복 약 3~4시간 · 9~10월 입산 ~14:00',note:'백록담 정상 대신 풍경과 단풍을 즐기는 코스. 예약은 불필요하지만 기상 통제와 하산시간을 확인.',url:'https://visithalla.jeju.go.kr/contents/contents.do?id=49'},
+ {n:'어승생악 짧은 산행',a:'제주시 1100로 2070-61 · 어리목',r:'제주시',lat:33.3928,lng:126.4946,kind:'휴일·이른 퇴근',time:'왕복 약 1시간 · 9~10월 입산 ~17:00',note:'한라산권에서 가장 짧은 선택지. 늦은 입산은 피하고 일몰·기상·현장 통제시간을 우선 확인.',url:'https://visithalla.jeju.go.kr/contents/contents.do?id=49'},
+ {n:'제주테니스스포츠클럽',a:'제주시 와흘전1길 32 · 제주생활체육공원',r:'동부',lat:33.5061,lng:126.6368,kind:'테니스',time:'프로그램·코트 예약 사전 문의',note:'공개 정보로 확인 가능한 테니스 대안. 오션뷰 코트는 아니며 레슨·일일 대관 가능 여부를 먼저 문의.',url:'https://sportsclub.sports.or.kr/club/jtsc'},
+ {n:'9.81파크 제주',a:'제주시 애월읍 천덕로 880-24',r:'서부',lat:33.3907,lng:126.3678,kind:'액티비티',time:'시설별·월별 운영시간 상이',note:'비양도 방향 풍경을 보며 중력 레이싱. 비 오는 날에는 스포츠랩·레이저태그 등 실내 콘텐츠 이용.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000008633'},
+ {n:'제주홀스타승마장',a:'제주시 한라산 중산간 일대',r:'제주시',lat:33.4439,lng:126.5018,kind:'승마',time:'30·45·75분 코스 · 전화예약',note:'초보 체험부터 편백숲 승마까지 선택. 기상악화 시 취소될 수 있어 휴일·이른 퇴근일에 사전예약.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000015891'},
+ {n:'액티브파크 클립앤클라임',a:'제주시 한림읍 금능남로 76',r:'서부',lat:33.3594,lng:126.2519,kind:'실내 클라이밍',time:'통상 10:00~17:00 · 회차예약',note:'날씨 영향을 덜 받는 실내 암벽 체험. 퇴근 후보다는 비 오는 휴일 반나절 콘텐츠로 적합.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000010214'},
+ {n:'사계 바당요가',a:'서귀포시 안덕면 사계리 해안 일대',r:'서귀포',lat:33.2297,lng:126.3087,kind:'바다 요가',time:'걷기명상 30분 + 요가 60분 · 예약제',note:'산방산과 바다를 곁에 둔 야외 수련. 시즌 일정·일몰 클래스·우천 취소 여부를 예약처에서 확인.',url:'https://tong.visitkorea.or.kr/ktobiz/upload/business/marketing/WellnessDirectoryBook_202107.pdf'},
+ {n:'2026 제주 원도심 야경투어',a:'제주시 관덕로17길 27-1 · 제주여행자센터',r:'제주시',lat:33.5150,lng:126.5283,kind:'도보 투어',time:'9~10월 18:00~20:30 · 지정일 운영',note:'성안올레와 원도심 이야기를 해설과 함께 걷는 프로그램. 9월은 토·일 확대 운영 안내.',url:'https://www.visitjeju.net/kr/festival/view?contentsid=CNTS_300000000014329'},
+ {n:'제주 물레집 도자기 클래스',a:'제주시 연북로 한라산 방향 일대',r:'제주시',lat:33.4756,lng:126.5428,kind:'원데이 클래스',time:'60~90분 · 예약 가능 회차 확인',note:'물레 성형 또는 핸드빌딩으로 1~2개 작품 제작. 저녁 회차가 없을 수 있어 휴일 후보로 분류.',url:'https://booking.kakao.com/detail/ticketStore/34577'},
+ {n:'요가베르데',a:'제주시 구좌읍 비자림로 1999-6',r:'동부',lat:33.4357,lng:126.7478,kind:'요가',time:'60분 또는 90분 · 소규모 예약제',note:'여행자·초보자도 참여하는 실내 또는 야외 원데이 요가. 영어·프라이빗 수업도 문의 가능.',url:'https://yogaverde.co.kr/22'},
+ {n:'시선요가 함덕',a:'제주시 조천읍 조함해안로 525',r:'동부',lat:33.5435,lng:126.6682,kind:'오션뷰 요가',time:'일출·선셋 클래스 · 예약제',note:'함덕 바다의 일출 또는 노을에 맞춰 진행되는 야외 수업. 9~10월 실제 회차와 우천 취소를 예약 전에 확인.',url:'https://v.daum.net/v/tmCWJv6FSg'},
+ {n:'제주901 요가·명상',a:'제주시 오남로6길 24',r:'제주시',lat:33.4814,lng:126.5098,kind:'요가·명상',time:'요가 50분 + 명상 40분 + 비건식',note:'한라산 숲 분위기에서 수련과 식사를 묶는 프로그램. 기존 공식 관광 소개이므로 현재 운영일을 전화로 재확인.',url:'https://m.visitjeju.net/kr/themtour/view?contentsid=CNTS_200000000013647'},
+ {n:'민주필라테스 제주직영점',a:'제주시 애월읍 일주서로 7209 3층',r:'서부',lat:33.4887,lng:126.4182,kind:'필라테스',time:'평일 09:00~20:00 · 예약제',note:'여행자도 참여 가능한 1:1·소규모 스탓필라테스. 주말·공휴일 휴무.',url:'https://www.visitjeju.net/kr/themtour/view?contentsid=CNTS_300000000014042'},
+ {n:'중문요가필라테스',a:'서귀포시 중문동 일대',r:'서귀포',lat:33.2518,lng:126.4251,kind:'필라테스',time:'요가·필라테스 · 체험 문의',note:'중문권 후보. 현재 운영시간과 기구 수업·단회 참여 여부를 사전에 확인.',url:'https://map.naver.com/p/search/%EC%A4%91%EB%AC%B8%EC%9A%94%EA%B0%80%ED%95%84%EB%9D%BC%ED%85%8C%EC%8A%A4'},
+ {n:'월정리 투명카약',a:'제주시 구좌읍 월정리 해안',r:'동부',lat:33.5566,lng:126.7959,kind:'투명카약',time:'주간 운영 · 약 30분 · 현장 확인',note:'얕고 비교적 잔잔한 월정리 바다를 투명 보트로 즐기는 체험. 9~10월 운영·풍랑·우천 취소를 당일 확인.',url:'https://www.ddojeju.com/place/%EC%9B%94%EC%A0%95%ED%88%AC%EB%AA%85%EC%B9%B4%EC%95%BD'},
+ {n:'카약올레 애월 투명카약',a:'제주시 애월읍 애월로1길 22',r:'서부',lat:33.4620,lng:126.3106,kind:'투명카약',time:'주간 운영 · 기상에 따라 변동',note:'한담·애월 카페거리 동선에 넣기 좋은 바다 체험. 퇴근 후보다 휴일 낮 일정에 적합.',url:'https://triple.guide/attractions/181ad772-38c5-4a01-a331-49c222803739'},
+ {n:'제주프리다이빙스쿨',a:'서귀포시 보목동 · 섶섬 앞바다',r:'서귀포',lat:33.2390,lng:126.6069,kind:'프리다이빙',time:'Lv1 원데이 · 종일 일정',note:'해수부 등록 전문교육센터의 입문 코스. 충분한 휴식이 필요해 근무일보다 휴일에 예약.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_300000000016071'},
+ {n:'서귀포 체험 스쿠버다이빙',a:'서귀포시 문섬·범섬·섶섬 해역',r:'서귀포',lat:33.2274,lng:126.5668,kind:'스쿠버다이빙',time:'약 1시간 30분~2시간 · 예약제',note:'자격증이나 수영 경험 없이도 강사와 체험 가능. 비행 전 충분한 수면 휴식시간과 건강 제한을 확인.',url:'https://m.visitjeju.net/kr/detail/view?contentsid=CNTS_000000000022353'},
+ {n:'제주라프 짚라인',a:'제주시 조천읍 선교로 115-1',r:'동부',lat:33.4323,lng:126.7065,kind:'짚라인',time:'주간 체험 · 운영 회차 확인',note:'거문오름 인근 숲 위를 지나는 짚라인. 우천·강풍 시 제한될 수 있어 휴일 동부 일정에 배치.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009505'},
+ {n:'우도 검멀레 동굴보트',a:'제주시 우도면 우도해안길 1132',r:'동부',lat:33.4969,lng:126.9679,kind:'제트보트',time:'우도 입도 후 주간 · 현장 운영 확인',note:'검멀레해안에서 동안경굴 주변을 빠르게 도는 보트 체험. 배편·파고·마지막 출도 시간을 함께 확인.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000009505'},
+ {n:'올레바당 테우낚시',a:'제주시 한림읍 한림해안로 267-6',r:'서부',lat:33.4255,lng:126.2642,kind:'전통 낚시',time:'약 1시간 · 온라인/현장 예약',note:'제주 전통 뗏목 형태의 가두리 낚시. 초보자도 가능하며 우천 시 취소될 수 있음.',url:'https://www.visitjeju.net/kr/detail/view?contentsid=CNTS_200000000015154'},
+ {n:'김녕 해녀·바릇잡이 체험',a:'제주시 구좌읍 김녕항1길 50-11',r:'동부',lat:33.5574,lng:126.7367,kind:'해녀 체험',time:'매일 10:00~17:00 · 물때에 따라 변동',note:'해녀와 함께 숨비소리와 바다 채취문화를 배우는 체험. 9월 말~10월 초 일정과 물때를 사전 문의.',url:'https://visitjeju.net/kareumstay/villages/placeDetail/335'}
+];
+const map=L.map('map',{zoomControl:false,minZoom:9}).setView([33.38,126.57],10);
+const tileProviders=[
+ {name:'OpenStreetMap',url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',options:{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}},
+ {name:'CARTO',url:'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',options:{subdomains:'abcd',maxZoom:20,attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}},
+ {name:'Esri',url:'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',options:{maxZoom:19,attribution:'Tiles &copy; Esri'}}
+];
+const mapStatus=document.getElementById('mapStatus');
+let tileLayer=null,tileProviderIndex=0,tileErrors=0,tileLoaded=false,tileTimer=null;
+function showMapStatus(message,retry=false){mapStatus.innerHTML=message+(retry?' <button type="button" id="retryTiles">다시 시도</button>':'');mapStatus.hidden=false;if(retry)document.getElementById('retryTiles').onclick=()=>loadTiles(0)}
+function loadTiles(index){
+ clearTimeout(tileTimer);if(tileLayer){tileLayer.off();map.removeLayer(tileLayer)}tileProviderIndex=index;tileErrors=0;tileLoaded=false;
+ const provider=tileProviders[index];showMapStatus(`${provider.name} 지도를 불러오는 중…`);
+ const layer=L.tileLayer(provider.url,provider.options);tileLayer=layer;
+ layer.on('tileload',()=>{if(layer===tileLayer&&!tileLoaded){tileLoaded=true;clearTimeout(tileTimer);mapStatus.hidden=true}});
+ layer.on('tileerror',()=>{if(layer!==tileLayer)return;tileErrors++;if(!tileLoaded&&tileErrors>=3)useNextTileProvider()});
+ layer.addTo(map);
+ tileTimer=setTimeout(()=>{if(layer===tileLayer&&!tileLoaded)useNextTileProvider()},7000);
+}
+function useNextTileProvider(){
+ clearTimeout(tileTimer);const next=tileProviderIndex+1;
+ if(next<tileProviders.length)loadTiles(next);
+ else showMapStatus('배경 지도 서버에 연결할 수 없습니다.',true);
+}
+loadTiles(0);
+L.control.zoom({position:'bottomleft'}).addTo(map);
+const officeLayer=L.layerGroup().addTo(map), stayLayer=L.layerGroup().addTo(map), pickLayer=L.layerGroup().addTo(map), playLayer=L.layerGroup().addTo(map), officeMarkers=[], stayMarkers=[], pickMarkers=[], playMarkers=[];
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const cleanAddress=p=>p.a.split('·')[0].trim();
+ const naverQuery=p=>p.naverQuery||(p.naverAddressOnly?cleanAddress(p):(p.n+' '+cleanAddress(p)));
+ const naverUrl=p=>'https://map.naver.com/p/search/'+encodeURIComponent(naverQuery(p));
+ const reviewUrl=p=>'https://search.naver.com/search.naver?where=blog&query='+encodeURIComponent((p.reviewQuery||p.n)+' 제주 워케이션 후기');
+places.forEach((p,i)=>{
+ const icon=L.divIcon({className:'',html:`<div class="marker"><span>${i+1}</span></div>`,iconSize:[32,38],iconAnchor:[16,38],popupAnchor:[0,-34]});
+  const office=L.marker([p.lat,p.lng],{icon}).bindPopup(`<div class="pop"><div class="tag">오피스 · ${esc(p.r)} · ${String(i+1).padStart(2,'0')}</div><h3>${esc(p.n)}</h3><p>${esc(p.a)}</p><div class="links"><a target="_blank" rel="noopener" href="${reviewUrl(p)}">이용 후기</a><a class="primary" target="_blank" rel="noopener" href="${naverUrl(p)}">네이버지도</a></div></div>`);
+ const stayIcon=L.divIcon({className:'',html:'<div class="marker stay-marker"><span>▰</span></div>',iconSize:[32,38],iconAnchor:[-2,38],popupAnchor:[18,-34]});
+  const stay=p.stay?L.marker([p.lat,p.lng],{icon:stayIcon}).bindPopup(`<div class="pop"><div class="tag" style="color:#c86d20">숙소 · 오피스와 동일 시설</div><h3>${esc(p.stay)}</h3><p>${esc(p.a)}</p><div class="links"><a class="primary" style="background:#e98932" target="_blank" rel="noopener" href="${naverUrl({...p,n:p.stay})}">네이버지도</a></div></div>`):null;
+ office.on('click',()=>select(i,false,'office'));if(stay)stay.on('click',()=>select(i,false,'stay'));officeMarkers.push(office);stayMarkers.push(stay);officeLayer.addLayer(office);if(stay)stayLayer.addLayer(stay);
+});
+const pickIcon=L.divIcon({className:'',html:'<div class="marker pick-marker"><span>♥</span></div>',iconSize:[32,38],iconAnchor:[16,38],popupAnchor:[0,-34]});
+ picks.forEach((p,i)=>{const m=L.marker([p.lat,p.lng],{icon:pickIcon}).bindPopup(`<div class="pop"><div class="tag" style="color:#7753a6">하운's pick · ${esc(p.r)}</div><h3>${esc(p.n)}</h3><p><b>${esc(p.note)}</b><br>${esc(p.a)}</p><div class="links"><a class="primary" style="background:#7753a6" target="_blank" rel="noopener" href="${naverUrl(p)}">네이버지도</a></div></div>`);pickMarkers.push(m);pickLayer.addLayer(m)});
+const playIcon=L.divIcon({className:'',html:'<div class="marker play-marker"><span>≈</span></div>',iconSize:[32,38],iconAnchor:[16,38],popupAnchor:[0,-34]});
+ activities.forEach(p=>{const m=L.marker([p.lat,p.lng],{icon:playIcon}).bindPopup(`<div class="pop"><div class="tag" style="color:#1687b8">${esc(p.kind)} · ${esc(p.r)}</div><h3>${esc(p.n)}</h3><p><b>${esc(p.time)}</b><br>${esc(p.note)}<br><br>${esc(p.a)}</p><div class="links"><a target="_blank" rel="noopener" href="${p.url}">정보 확인</a><a class="primary" style="background:#1687b8" target="_blank" rel="noopener" href="${naverUrl(p)}">네이버지도</a></div></div>`);playMarkers.push(m);playLayer.addLayer(m)});
+let region='전체', query='', showOffice=true, showStay=true, showPick=true, showPlay=true;
+function visible(p){const regionOk=region==='전체'||p.r===region||(region==='제주시'&&p.r==='제주시');return regionOk&&(!query||(p.n+' '+p.a).toLowerCase().includes(query));}
+function render(){const list=document.getElementById('list');list.innerHTML='';let shown=0;places.forEach((p,i)=>{const on=visible(p);officeLayer.removeLayer(officeMarkers[i]);if(stayMarkers[i])stayLayer.removeLayer(stayMarkers[i]);if(on&&(showOffice||(showStay&&p.stay))){shown++;if(showOffice)officeLayer.addLayer(officeMarkers[i]);if(showStay&&stayMarkers[i])stayLayer.addLayer(stayMarkers[i]);const el=document.createElement('article');el.className='place';el.dataset.i=i;el.innerHTML=`<div class="place-head"><div class="num">${i+1}</div><h2>${esc(p.n)}</h2><span class="region">${esc(p.r)}</span></div><p class="address">${esc(p.a)}</p><div class="badges">${showOffice?'<span class="badge">오피스</span>':''}${showStay&&p.stay?'<span class="badge stay">동일 시설 숙소</span>':''}</div>${showStay&&p.stay?`<p class="stay-note">${esc(p.stay)}</p>`:''}`;el.onclick=()=>select(i,true,!showOffice&&p.stay?'stay':'office');list.appendChild(el)}});activities.forEach((p,i)=>{playLayer.removeLayer(playMarkers[i]);if(showPlay&&visible(p)){shown++;playLayer.addLayer(playMarkers[i]);const el=document.createElement('article');el.className='place play-card';el.innerHTML=`<div class="place-head"><div class="num">${p.kind==='서핑'?'≈':'✦'}</div><h2>${esc(p.n)}</h2><span class="region">${esc(p.r)}</span></div><p class="address">${esc(p.a)}</p><div class="badges"><span class="badge play">${esc(p.kind)}</span><span class="badge play">${esc(p.time)}</span></div><p class="activity-note">${esc(p.note)}</p>`;el.onclick=()=>{map.flyTo([p.lat,p.lng],14,{duration:.8});playMarkers[i].openPopup()};list.appendChild(el)}});picks.forEach((p,i)=>{pickLayer.removeLayer(pickMarkers[i]);if(showPick&&visible(p)){shown++;pickLayer.addLayer(pickMarkers[i]);const el=document.createElement('article');el.className='place pick-card';el.innerHTML=`<div class="place-head"><div class="num">♥</div><h2>${esc(p.n)}</h2><span class="region">${esc(p.r)}</span></div><p class="address">${esc(p.a)}</p><div class="badges"><span class="badge pick">하운's pick</span></div>`;el.onclick=()=>{map.flyTo([p.lat,p.lng],14,{duration:.8});pickMarkers[i].openPopup()};list.appendChild(el)}});document.getElementById('count').textContent=`${shown}개 장소 표시 중`;}
+function select(i,scroll,type='office'){document.querySelectorAll('.place').forEach(x=>x.classList.toggle('active',+x.dataset.i===i));map.flyTo([places[i].lat,places[i].lng],14,{duration:.8});const target=type==='stay'&&stayMarkers[i]?stayMarkers[i]:officeMarkers[i];target.openPopup();if(scroll){const el=document.querySelector(`.place[data-i="${i}"]`);el?.scrollIntoView({behavior:'smooth',block:'nearest'});if(innerWidth<761)document.getElementById('map').scrollIntoView({behavior:'smooth'});}}
+function fit(){const active=[];places.forEach((p,i)=>{if(visible(p)){if(showOffice)active.push(officeMarkers[i]);if(showStay&&stayMarkers[i])active.push(stayMarkers[i])}});activities.forEach((p,i)=>{if(showPlay&&visible(p))active.push(playMarkers[i])});picks.forEach((p,i)=>{if(showPick&&visible(p))active.push(pickMarkers[i])});if(active.length)map.fitBounds(L.featureGroup(active).getBounds().pad(.13));}
+document.getElementById('search').addEventListener('input',e=>{query=e.target.value.trim().toLowerCase();render()});document.getElementById('clear').onclick=()=>{document.getElementById('search').value='';query='';render()};
+document.getElementById('filters').onclick=e=>{if(!e.target.dataset.region)return;region=e.target.dataset.region;document.querySelectorAll('.filters button').forEach(b=>b.classList.toggle('active',b===e.target));render();fit()};
+document.getElementById('layers').onclick=e=>{const b=e.target.closest('button');if(!b)return;const key=b.dataset.layer;if(key==='office')showOffice=!showOffice;else if(key==='stay')showStay=!showStay;else if(key==='play')showPlay=!showPlay;else showPick=!showPick;const states={office:showOffice,stay:showStay,play:showPlay,pick:showPick};b.classList.toggle('active',states[key]);render();fit()};
+document.getElementById('fit').onclick=fit;document.getElementById('showAll').onclick=()=>{region='전체';query='';showOffice=showStay=showPick=showPlay=true;document.getElementById('search').value='';document.querySelectorAll('.filters button').forEach(b=>b.classList.toggle('active',b.dataset.region==='전체'));document.querySelectorAll('.layer-switch button').forEach(b=>b.classList.add('active'));render();fit()};
+ document.querySelector('.top-tabs').addEventListener('click',e=>{const button=e.target.closest('button[data-view]');if(!button)return;document.querySelectorAll('.top-tabs button').forEach(b=>b.classList.toggle('active',b===button));document.querySelectorAll('.app-view').forEach(view=>view.hidden=view.id!==button.dataset.view);document.body.style.overflow=button.dataset.view==='mapView'?'':'auto';if(button.dataset.view==='mapView')setTimeout(()=>{map.invalidateSize();fit()},50)});
+ const planChecks=[...document.querySelectorAll('.content-check input')];planChecks.forEach(input=>{input.checked=localStorage.getItem('jeju-'+input.id)==='1';input.addEventListener('change',()=>localStorage.setItem('jeju-'+input.id,input.checked?'1':'0'))});document.getElementById('resetPlan').onclick=()=>planChecks.forEach(input=>{input.checked=false;localStorage.removeItem('jeju-'+input.id)});
+ render();setTimeout(fit,150);
+</script>
+</body>
+</html>
